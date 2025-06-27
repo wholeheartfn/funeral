@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>부고장 정보 입력</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#fff6f3;--card:#fff;--accent:#6fcf97;--accent-dark:#57b87a;--radius:.95rem}
+    html{font-size:17px}
+    html,body{height:100%;font-family:"Pretendard","Noto Sans KR",sans-serif}
+    body{background:var(--bg)}
+    .page-wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+    .card{width:100%;max-width:22rem;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(231,111,102,0.13);padding:2.2rem 1rem 2.2rem;animation:fade .45s ease}
+    @keyframes fade{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    h2{display:flex;align-items:center;gap:.55rem;font-weight:700;color:var(--accent);line-height:1.3}
+    #intro h2,#formPage h2,#summary h2{font-size:1.6rem}.icon{font-size:1.55rem}
+    .info-note{font-size:1.05rem;line-height:1.6;color:#8c4e4a}
+    .field label{display:block;font-size:1.08rem;font-weight:600;color:#3d3d3d;margin-bottom:.4rem;letter-spacing:-0.01em}
+    input,select{width:100%;min-height:48px;padding:0.625rem;font-size:1.08rem;border:1px solid #e2e4e7;border-radius:.45rem;background:#fff;transition:border .15s,box-shadow .15s}
+    input::placeholder{color:#d1bdbb;opacity:1}
+    input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(231,111,102,.18)}
+    select{background:none;padding-right:0.625rem;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;font-weight:600;border:none;cursor:pointer;border-radius:var(--radius);transition:background .15s,transform .12s,box-shadow .15s;min-height:48px;font-size:1.13rem;box-shadow:0 2px 8px rgba(231,111,102,0.08)}
+    .btn:active{transform:scale(.97)}
+    .btn-primary{background:var(--accent);color:#fff;width:100%}
+    .btn-primary:hover,.btn-primary:focus{background:linear-gradient(90deg,#6fcf97 80%,#a8f5c2 100%);box-shadow:0 4px 16px rgba(111,207,151,0.13)}
+    .btn-secondary{background:#e6fbe9;color:#388e5c;width:100%}
+    .btn-secondary:hover{background:#c8f5d6}
+    #editBtn{width:34%;margin:1.3rem auto 0}
+    #mournersWrap>div{border:1px solid #f0b7b3;border-radius:.5rem;background:#fffafa;padding:1rem .9rem;margin-top:.9rem}
+    .upperInfo{border:1px solid #f0b7b3;border-radius:.55rem;background:#fffdfa;padding:1rem .9rem;margin-top:1.25rem}
+    .summary-grid{display:grid;grid-template-columns:minmax(100px,120px) 1fr;row-gap:.55rem;column-gap:.5rem;font-size:1.05rem}
+    .label{font-weight:600;color:#444}
+    .nowrap{white-space:nowrap}
+    hr{border-color:#d2f5e1}
+    #msg{min-height:1.05rem;font-size:.98rem}
+    @media (max-width:480px){.card{box-shadow:0 8px 32px rgba(231,111,102,0.13);}}
+  </style>
+</head>
+<body>
+  <div class="page-wrap" style="flex-direction:column; align-items:center;">
+    <!-- 인사말은 summary(요약) 카드 안에서만 노출 -->
+
+    <!-- Intro -->
+    <div id="intro" class="card space-y-7">
+      <div class="leading-relaxed space-y-1">
+        <p class="text-[1.45rem] font-semibold text-gray-800">참정성가득 우리상조와</p>
+        <p class="text-lg text-gray-700">함께 해주셔서 감사합니다</p>
+        <p class="info-note mt-2">상주 정보를 작성하신 후<br>답문자 하나 부탁드려요<br>감사합니다.</p>
+      </div>
+      <h2><span class="icon">🕊️</span> 부고장 상주 정보</h2>
+      <div class="field"><label for="introName">고인분 성함을 입력해주세요</label><input id="introName" class="p-2.5" placeholder="홍길동" autofocus autocomplete="on" autocapitalize="off" spellcheck="false"></div>
+      <button id="startBtn" class="btn btn-primary">작성하기</button>
+      <p id="msg" class="text-xs mt-5 text-center"></p>
+    </div>
+
+    <!-- Form -->
+    <div id="formPage" class="card hidden" style="max-height:90vh; overflow-y: auto;">
+      <h2><span class="icon">🗒️</span> 부고장 정보 입력</h2>
+      <div class="upperInfo space-y-4" style="background:#f3fff3;">
+        <div class="flex items-center mb-2 text-base font-semibold text-green-700">먼저 고인분 인적사항을 적어주세요</div>
+        <div class="grid grid-cols-6 gap-2">
+          <!-- 1줄 -->
+          <input id="deceasedName" class="col-span-2 p-2.5 w-full min-w-0" placeholder="고인성함" autocomplete="on" autocapitalize="off" spellcheck="false">
+          <select id="gender" class="col-span-2 p-2.5 w-full min-w-0" autocomplete="off">
+            <option value="" disabled selected hidden>성별</option>
+            <option>남</option>
+            <option>여</option>
+          </select>
+          <input id="deceasedAge" type="number" class="col-span-2 p-2.5 w-full min-w-0" placeholder="나이" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+          <!-- 2줄(한 줄로) -->
+          <select id="religion" class="col-span-3 p-2.5 w-full min-w-0" autocomplete="off">
+            <option value="" disabled selected hidden>종교</option>
+            <option>불교</option>
+            <option>기독교</option>
+            <option>천주교</option>
+            <option>무교</option>
+            <option>기타</option>
+          </select>
+          <div class="col-span-3 flex items-center gap-2 ml-2">
+            <label for="origin" class="text-sm font-semibold text-gray-700 mb-0">본</label>
+            <input id="origin" class="p-2.5 w-full min-w-0" placeholder="경주" autocomplete="on" autocapitalize="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="field"><label for="funeralHall">장례식장</label><input id="funeralHall" class="p-2.5" autocomplete="on" autocapitalize="off" spellcheck="false"></div>
+          <div class="field"><label for="hallRoom">빈소</label><input id="hallRoom" class="p-2.5" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+        </div>
+        <div class="field"><label for="burialSite">장지</label><input id="burialSite" class="p-2.5" autocomplete="on" autocapitalize="off" spellcheck="false"></div>
+      </div>
+      <div id="mournersWrap" class="mt-6"></div>
+      <button id="addBtn" type="button" class="btn btn-secondary mt-4">➕ 상주 추가</button>
+      <p id="msg" class="text-xs mt-5 text-center text-red-500"></p>
+      <button id="submitBtn" class="btn btn-primary mt-2">저장 / 제출</button>
+    </div>
+
+    <!-- summary 카드 위에 인사말 -->
+    <div id="summaryGreeting" class="leading-relaxed space-y-1 mb-5 text-left select-none hidden" style="width:100%;max-width:22rem;">
+      <p style="color:var(--accent); font-family:'Noto Serif KR', serif; font-weight:200 !important;" class="text-[1rem] mb-1">작성해주셔서 감사합니다</p>
+      <p style="color:var(--accent); font-family:'Noto Serif KR', serif;" class="text-[1.5rem] font-semibold">참정성으로 모시겠습니다</p>
+    </div>
+    <div id="summary" class="card hidden overflow-y-auto" style="max-height:90vh; padding-top:1.5rem; padding-bottom:1.5rem;">
+      <h2 class="mb-5"><span class="icon">📋</span> 부고장 정리</h2>
+      <div id="summaryContent" class="space-y-4"></div>
+      <button id="editBtn" class="btn btn-primary">수정하기</button>
+      <p class="info-note mt-3 leading-6">작성이 완료되셨으면 답문자 부탁드려요<br>추가나 수정은 언제든 가능합니다</p>
+    </div>
+  </div>
+
+<script>
+(()=>{
+  const SHEET="https://script.google.com/macros/s/AKfycbyYLF9xiP-KJ6e-HwwwTvu4QleKdQ_1ZHFQFbsqoGF7iYoofJCyeKLw7MUT6AxfPGG4IA/exec";
+  const $=id=>document.getElementById(id);
+  const show=id=>{
+    ["intro","formPage","summary"].forEach(p=>$(p).classList.toggle("hidden",p!==id));
+    if (id === "summary") {
+      $("summaryGreeting").classList.remove("hidden");
+    } else {
+      $("summaryGreeting").classList.add("hidden");
+    }
+  };
+  const REL=["관계","배우자","아들","며느리","딸","사위","손자","손녀","외손자","외손녀"];
+  const info = (t, e) => {
+    // 현재 보이는 카드에서만 #msg를 찾아 메시지 출력
+    const card = document.querySelector('.card:not(.hidden)');
+    if (!card) return;
+    const msg = card.querySelector('#msg');
+    if (!msg) return;
+    if (t.includes('<br>')) {
+      msg.innerHTML = t;
+      msg.className = "text-xs mt-5 text-center leading-relaxed" + (e ? " text-red-500" : " text-gray-600");
+    } else {
+      msg.textContent = t;
+      msg.className = "text-xs mt-5 text-center" + (e ? " text-red-500" : " text-gray-600");
+    }
+  };
+
+  /* ▶ 작성 시작 */
+  $("startBtn").onclick=async()=>{
+    const name=$("introName").value.trim();
+    if(!name){alert("고인성함을 입력해주세요");return;}
+    $("startBtn").style.display = "none";
+    info("기존정보 여부를 확인중입니다.<br>잠시만 기다려주세요", false);
+    // 1. 구글시트에서 조회
+    try {
+      const res = await fetch(SHEET+"?deceased="+encodeURIComponent(name));
+      const data = await res.json();
+      if (data && data.deceased) {
+        load(data);
+        $("deceasedName").value = name;
+        show("formPage");
+        info("", false);
+        $("startBtn").style.display = "";
+        return;
+      }
+    } catch (e) {}
+    // 2. 구글시트에 없으면 localStorage에서 조회
+    const saved = localStorage.getItem("funeral_"+name);
+    if (saved) {
+      load(JSON.parse(saved));
+      $("deceasedName").value = name;
+      show("formPage");
+    } else {
+      reset();
+      addRow();
+      $("deceasedName").value = name;
+      show("formPage");
+    }
+    info("", false);
+    $("startBtn").style.display = "";
+  };
+
+  /* ▶ 상주 추가 */
+  $("addBtn").onclick=addRow;
+  function addRow(d={}){
+    const wrap=$("mournersWrap");
+    const idx=wrap.children.length+1;
+    const box=document.createElement("div");
+    const BANKS = [
+      "KB국민은행", "신한은행", "우리은행", "하나은행", "NH농협은행", "IBK기업은행",
+      "카카오뱅크", "케이뱅크", "토스뱅크",
+      "SC제일은행", "한국씨티은행", "BNK부산은행", "BNK경남은행", "DGB대구은행",
+      "광주은행", "전북은행", "Sh수협은행", "우체국", "새마을금고", "신협", "산림조합"
+    ];
+    let bankVal = d.bank || "";
+    let isDirect = bankVal && !BANKS.includes(bankVal);
+    box.innerHTML = `<div class='flex items-center mb-2 text-sm font-medium text-gray-600'><span>상주 ${idx}</span><button type='button' class='ml-auto text-xs text-red-500'>삭제</button></div>
+      <div class='grid grid-cols-2 gap-2'>
+        <select class='relation border border-gray-300 rounded-md p-2.5'>${REL.map(r=>`<option${r===d.relation?" selected":""}>${r}</option>`).join("")}</select>
+        <input class='name border border-gray-300 rounded-md p-2.5' placeholder='이름' value='${d.name||""}' autocomplete="on" autocapitalize="off" spellcheck="false">
+        <input class='phone col-span-2 border border-gray-300 rounded-md p-2.5' placeholder='연락처' value='${d.phone||""}' autocomplete="off" inputmode="tel" pattern="[0-9]*">
+        <div class='col-span-2 flex gap-2 items-center bank-account-wrap'></div>
+      </div>`;
+    // 은행명+계좌번호 한 줄에 배치
+    const bankAccountWrap = box.querySelector('.bank-account-wrap');
+    function renderBankField(val) {
+      bankAccountWrap.innerHTML = '';
+      // '직접입력'이거나 대표은행에 없는 값이면 input, 아니면 select
+      if (val === '직접입력' || (val && !BANKS.includes(val))) {
+        // input(은행명) + 계좌번호
+        const inp = document.createElement('input');
+        inp.className = 'bank-input w-24 border border-gray-300 rounded-md p-2.5';
+        inp.placeholder = '은행명';
+        inp.value = val === '직접입력' ? '' : val;
+        inp.autocomplete = 'off';
+        inp.autocapitalize = 'off';
+        inp.spellcheck = false;
+        setTimeout(()=>inp.focus(), 0);
+        inp.onblur = () => {
+          if (BANKS.includes(inp.value)) {
+            renderBankField(inp.value);
+          }
+        };
+        inp.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            inp.blur();
+          }
+        };
+        bankAccountWrap.appendChild(inp);
+        // 계좌번호 input
+        const acc = document.createElement('input');
+        acc.className = 'account flex-1 border border-gray-300 rounded-md p-2.5';
+        acc.placeholder = '계좌번호';
+        acc.value = d.account || '';
+        acc.autocomplete = 'off';
+        acc.inputMode = 'numeric';
+        acc.pattern = '[0-9]*';
+        bankAccountWrap.appendChild(acc);
+      } else {
+        // select + 계좌번호
+        const sel = document.createElement('select');
+        sel.className = 'bank-select w-24 border border-gray-300 rounded-md p-2.5';
+        // '은행선택' 옵션
+        const optDefault = document.createElement('option');
+        optDefault.value = '';
+        optDefault.textContent = '은행선택';
+        optDefault.disabled = true;
+        optDefault.selected = !val;
+        optDefault.hidden = true;
+        sel.appendChild(optDefault);
+        BANKS.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b;
+          opt.textContent = b;
+          if (val === b) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        const optDirect = document.createElement('option');
+        optDirect.value = '직접입력';
+        optDirect.textContent = '직접입력';
+        if (val && !BANKS.includes(val)) optDirect.selected = true;
+        sel.appendChild(optDirect);
+        sel.onchange = () => {
+          if (sel.value === '직접입력') {
+            renderBankField('직접입력');
+          } else {
+            renderBankField(sel.value);
+          }
+        };
+        bankAccountWrap.appendChild(sel);
+        // 계좌번호 input
+        const acc = document.createElement('input');
+        acc.className = 'account flex-1 border border-gray-300 rounded-md p-2.5';
+        acc.placeholder = '계좌번호';
+        acc.value = d.account || '';
+        acc.autocomplete = 'off';
+        acc.inputMode = 'numeric';
+        acc.pattern = '[0-9]*';
+        bankAccountWrap.appendChild(acc);
+      }
+    }
+    renderBankField(isDirect ? bankVal : (BANKS.includes(bankVal) ? bankVal : ""));
+    box.querySelector("button").onclick=()=>{box.remove();reIndex();};
+    wrap.appendChild(box);
+  }
+  const reIndex=()=>Array.from(document.querySelectorAll("#mournersWrap>div")).forEach((el,i)=>el.querySelector("span").textContent=`상주 ${i+1}`);
+
+  /* ▶ 상태 관리 */
+  function reset(){["deceasedName","gender","deceasedAge","religion","origin","funeralHall","hallRoom","burialSite"].forEach(id=>$(id).value="");$("mournersWrap").innerHTML="";}
+  function load(d){reset();$("deceasedName").value=d.deceased;$("gender").value=d.gender;$("deceasedAge").value=d.age;$("religion").value=d.religion;$("origin").value=d.origin;$("funeralHall").value=d.funeralHall;$("hallRoom").value=d.hallRoom;$("burialSite").value=d.burialSite;d.mourners.forEach(addRow);}
+
+  /* ▶ 제출 */
+  $("submitBtn").onclick=async()=>{
+    $("submitBtn").style.display = "none";
+    info("저장중입니다. 잠시만 기다려주세요", false);
+    const mourners=[];document.querySelectorAll("#mournersWrap>div").forEach(div=>{
+      const n=div.querySelector(".name").value.trim();
+      if(n) {
+        // 은행명 처리
+        let bankSel = div.querySelector('.bank-select');
+        let bankInp = div.querySelector('.bank-input');
+        let bank = '';
+        if (bankSel) {
+          bank = bankSel.value;
+        } else if (bankInp) {
+          bank = bankInp.value.trim();
+        }
+        if (!bank) {
+          info("은행명을 선택하거나 입력하세요", true);
+          return;
+        }
+        mourners.push({
+          relation:div.querySelector(".relation").value,
+          name:n,
+          phone:div.querySelector(".phone").value,
+          bank:bank,
+          account:div.querySelector(".account").value
+        });
+      }
+    });
+    if(!mourners.length){info("상주 정보를 입력하세요",true);$("submitBtn").style.display = "";return;}
+    const data={timestamp:new Date().toLocaleString("ko-KR"),deceased:$("deceasedName").value,gender:$("gender").value,age:$("deceasedAge").value,religion:$("religion").value,origin:$("origin").value,funeralHall:$("funeralHall").value,hallRoom:$("hallRoom").value,burialSite:$("burialSite").value,mourners};
+    localStorage.setItem("funeral_"+data.deceased,JSON.stringify(data));
+    try{await fetch(SHEET,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});info("저장 완료");}catch(e){console.error(e);info("저장 실패",true);}
+    render(data);show("summary");
+    info("", false);
+    $("submitBtn").style.display = "";
+  };
+
+  function render(d){
+    $("summaryContent").innerHTML = `
+      <div>
+        <div class="font-semibold text-gray-700 text-lg mb-1">고인분 인적사항</div>
+        <div class="flex items-center mb-3">
+          <span class="text-base mr-2" style="color:var(--accent);">●</span>
+          <span class="text-lg whitespace-nowrap">故 <b>${d.deceased}</b> 님 (${d.gender||'-'}, ${d.age||'-'}세, ${d.religion||'-'}, ${d.origin||'-'})</span>
+        </div>
+        <div class="flex items-center mb-1">
+          <span class="font-semibold text-gray-700 text-lg mr-2">장례식장/빈소</span>
+          <span class="text-lg whitespace-nowrap">${d.funeralHall||'-'}${d.hallRoom?` (${d.hallRoom})`:''}</span>
+        </div>
+        <div class="flex items-center mb-1">
+          <span class="font-semibold text-gray-700 text-lg mr-2">장지</span>
+          <span class="text-lg whitespace-nowrap">${d.burialSite||'-'}</span>
+        </div>
+      </div>
+      <hr class="my-4">
+      <div class="space-y-3">
+        ${d.mourners.map((m,i)=>`
+          <div>
+            <span class='font-semibold text-lg whitespace-nowrap'>${i+1}. [${m.relation}] ${m.name}</span>
+            <span class="text-lg whitespace-nowrap">(${m.phone})</span><br>
+            <span class='text-gray-600 text-base whitespace-nowrap'>${m.bank} ${m.account}</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  $("editBtn").onclick=()=>show("formPage");
+})();
+</script>
+</body>
+</html>
