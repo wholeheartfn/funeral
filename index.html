@@ -99,11 +99,11 @@
 
     <!-- summary 카드 위에 인사말 -->
     <div id="summaryGreeting" class="leading-relaxed space-y-1 mb-5 text-left select-none hidden" style="width:100%;max-width:22rem;">
-      <p style="color:var(--accent); font-family:'Noto Serif KR', serif; font-weight:200 !important;" class="text-[1rem] mb-1">작성해주셔서 감사합니다</p>
-      <p style="color:var(--accent); font-family:'Noto Serif KR', serif;" class="text-[1.5rem] font-semibold">참정성으로 모시겠습니다</p>
+      <p class="text-[1rem] mb-1" style="color:#249c5d; font-family:'Noto Serif KR', serif; font-weight:200 !important;">작성해주셔서 감사합니다</p>
+      <p class="text-[1.5rem] font-semibold" style="color:#249c5d; font-family:'Noto Serif KR', serif;">참정성으로 모시겠습니다</p>
     </div>
     <div id="summary" class="card hidden overflow-y-auto" style="max-height:90vh; padding-top:1.5rem; padding-bottom:1.5rem;">
-      <h2 class="mb-5"><span class="icon">📋</span> 부고장 정리</h2>
+      <h2 class="mb-5" style="color:#249c5d;"><span class="icon">📋</span> 부고장 정리</h2>
       <div id="summaryContent" class="space-y-4"></div>
       <button id="editBtn" class="btn btn-primary">수정하기</button>
       <p class="info-note mt-3 leading-6">작성이 완료되셨으면 답문자 부탁드려요<br>추가나 수정은 언제든 가능합니다</p>
@@ -302,10 +302,15 @@
           info("은행명을 선택하거나 입력하세요", true);
           return;
         }
+        let phone = div.querySelector(".phone").value.trim();
+        // 연락처 앞에 작은따옴표가 없으면 붙여줌
+        if (phone && !phone.startsWith("'")) {
+          phone = "'" + phone;
+        }
         mourners.push({
           relation:div.querySelector(".relation").value,
           name:n,
-          phone:div.querySelector(".phone").value,
+          phone:phone,
           bank:bank,
           account:div.querySelector(".account").value
         });
@@ -339,13 +344,16 @@
       </div>
       <hr class="my-4">
       <div class="space-y-3">
-        ${d.mourners.map((m,i)=>`
-          <div>
-            <span class='font-semibold text-lg whitespace-nowrap'>${i+1}. [${m.relation}] ${m.name}</span>
-            <span class="text-lg whitespace-nowrap">(${m.phone})</span><br>
-            <span class='text-gray-600 text-base whitespace-nowrap'>${m.bank} ${m.account}</span>
-          </div>
-        `).join("")}
+        ${d.mourners.map((m,i)=>{
+          const phone = (m.phone||'').replace(/^'/, '');
+          return `
+            <div>
+              <span class='font-semibold text-lg whitespace-nowrap'>${i+1}. [${m.relation}] ${m.name}</span>
+              <span class="text-lg whitespace-nowrap">(${phone})</span><br>
+              <span class='text-gray-600 text-base whitespace-nowrap'>${m.bank} ${m.account}</span>
+            </div>
+          `;
+        }).join("")}
       </div>
     `;
   }
