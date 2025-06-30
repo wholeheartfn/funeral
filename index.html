@@ -81,17 +81,20 @@
             <option>기타</option>
           </select>
           <div class="col-span-3 flex items-center gap-2 ml-2">
-            <label for="origin" class="text-sm font-semibold text-gray-700 mb-0">본</label>
+            <label for="origin" class="text-gray-700 mb-0" style="font-size:1.08rem;font-weight:600;">본</label>
             <input id="origin" class="p-2.5 w-full min-w-0" placeholder="경주" autocomplete="on" autocapitalize="off" spellcheck="false">
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="field"><label for="funeralHall">장례식장</label><input id="funeralHall" class="p-2.5" autocomplete="on" autocapitalize="off" spellcheck="false"></div>
-          <div class="field"><label for="hallRoom">빈소</label><input id="hallRoom" class="p-2.5" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+          <div class="field"><label for="funeralHall" style="font-size:1.08rem;font-weight:600;">장례식장</label><input id="funeralHall" class="p-2.5" autocomplete="on" autocapitalize="off" spellcheck="false"></div>
+          <div class="field"><label for="hallRoom" style="font-size:1.08rem;font-weight:600;">빈소</label><input id="hallRoom" class="p-2.5" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
         </div>
-        <div class="field"><label for="burialSite">장지</label><input id="burialSite" class="p-2.5" autocomplete="on" autocapitalize="off" spellcheck="false"></div>
+        <div class="field"><label for="burialSite" style="font-size:1.08rem;font-weight:600;">장지</label><input id="burialSite" class="p-2.5" autocomplete="on" autocapitalize="off" spellcheck="false"></div>
       </div>
-      <div id="mournersWrap" class="mt-6"></div>
+      <div id="mournersGuide" class="text-green-700 font-semibold" style="margin-top:2rem;margin-bottom:0.4rem;text-align:left;max-width:22rem;font-size:1rem;line-height:1.5;word-break:keep-all;">
+        상주정보 입력시<br>가급적이면 관계 순으로 작성을 부탁드려요
+      </div>
+      <div id="mournersWrap" class="mt-2"></div>
       <button id="addBtn" type="button" class="btn btn-secondary mt-4">➕ 상주 추가</button>
       <p id="msg" class="text-xs mt-5 text-center text-red-500"></p>
       <button id="submitBtn" class="btn btn-primary mt-2">저장 / 제출</button>
@@ -122,7 +125,7 @@
       $("summaryGreeting").classList.add("hidden");
     }
   };
-  const REL=["관계","배우자","아들","며느리","딸","사위","손자","손녀","외손자","외손녀"];
+  const REL=["관계","배우자","아들","며느리","딸","사위","손자","손녀","외손자","외손녀","손부","손서","외손부","외손서"];
   const info = (t, e) => {
     // 현재 보이는 카드에서만 #msg를 찾아 메시지 출력
     const card = document.querySelector('.card:not(.hidden)');
@@ -187,7 +190,12 @@
     ];
     let bankVal = d.bank || "";
     let isDirect = bankVal && !BANKS.includes(bankVal);
-    box.innerHTML = `<div class='flex items-center mb-2 text-sm font-medium text-gray-600'><span>상주 ${idx}</span><button type='button' class='ml-auto text-xs text-red-500'>삭제</button></div>
+    box.innerHTML = `<div class='flex items-center mb-2 text-sm font-medium text-gray-600'>
+      <span>상주 ${idx}</span>
+      <button type='button' class='move-up ml-auto mr-1 rounded-full border border-gray-300 px-2 py-0.5 text-xs bg-white hover:bg-gray-100' title='위로 이동'>▲</button>
+      <button type='button' class='move-down ml-1 rounded-full border border-gray-300 px-2 py-0.5 text-xs bg-white hover:bg-gray-100' title='아래로 이동'>▼</button>
+      <button type='button' class='ml-4 text-xs text-red-500 delete-btn'>삭제</button>
+    </div>
       <div class='grid grid-cols-2 gap-2'>
         <select class='relation border border-gray-300 rounded-md p-2.5'>${REL.map(r=>`<option${r===d.relation?" selected":""}>${r}</option>`).join("")}</select>
         <input class='name border border-gray-300 rounded-md p-2.5' placeholder='이름' value='${d.name||""}' autocomplete="on" autocapitalize="off" spellcheck="false">
@@ -273,10 +281,46 @@
       }
     }
     renderBankField(isDirect ? bankVal : (BANKS.includes(bankVal) ? bankVal : ""));
-    box.querySelector("button").onclick=()=>{box.remove();reIndex();};
+    // 이동/삭제 버튼 이벤트
+    const upBtn = box.querySelector('.move-up');
+    const downBtn = box.querySelector('.move-down');
+    const delBtn = box.querySelector(".delete-btn");
+    upBtn.onclick = () => {
+      if (box.previousElementSibling) {
+        box.parentNode.insertBefore(box, box.previousElementSibling);
+        reIndex();
+        updateMoveBtnState();
+      }
+    };
+    downBtn.onclick = () => {
+      if (box.nextElementSibling) {
+        box.parentNode.insertBefore(box.nextElementSibling, box);
+        reIndex();
+        updateMoveBtnState();
+      }
+    };
+    delBtn.onclick=()=>{
+      const idx = Array.from(box.parentNode.children).indexOf(box) + 1;
+      showDeleteModal(box, idx);
+    };
     wrap.appendChild(box);
+    updateMoveBtnState();
   }
   const reIndex=()=>Array.from(document.querySelectorAll("#mournersWrap>div")).forEach((el,i)=>el.querySelector("span").textContent=`상주 ${i+1}`);
+  // 이동버튼 활성/비활성 관리
+  function updateMoveBtnState() {
+    const boxes = Array.from(document.querySelectorAll("#mournersWrap>div"));
+    boxes.forEach((box, i) => {
+      const upBtn = box.querySelector('.move-up');
+      const downBtn = box.querySelector('.move-down');
+      upBtn.disabled = i === 0;
+      downBtn.disabled = i === boxes.length - 1;
+      upBtn.style.opacity = upBtn.disabled ? 0.4 : 1;
+      downBtn.style.opacity = downBtn.disabled ? 0.4 : 1;
+      upBtn.style.cursor = upBtn.disabled ? 'not-allowed' : 'pointer';
+      downBtn.style.cursor = downBtn.disabled ? 'not-allowed' : 'pointer';
+    });
+  }
 
   /* ▶ 상태 관리 */
   function reset(){["deceasedName","gender","deceasedAge","religion","origin","funeralHall","hallRoom","burialSite"].forEach(id=>$(id).value="");$("mournersWrap").innerHTML="";}
@@ -289,7 +333,6 @@
     const mourners=[];document.querySelectorAll("#mournersWrap>div").forEach(div=>{
       const n=div.querySelector(".name").value.trim();
       if(n) {
-        // 은행명 처리
         let bankSel = div.querySelector('.bank-select');
         let bankInp = div.querySelector('.bank-input');
         let bank = '';
@@ -298,12 +341,7 @@
         } else if (bankInp) {
           bank = bankInp.value.trim();
         }
-        if (!bank) {
-          info("은행명을 선택하거나 입력하세요", true);
-          return;
-        }
         let phone = div.querySelector(".phone").value.trim();
-        // 연락처 앞에 작은따옴표가 없으면 붙여줌
         if (phone && !phone.startsWith("'")) {
           phone = "'" + phone;
         }
@@ -318,8 +356,13 @@
     });
     if(!mourners.length){info("상주 정보를 입력하세요",true);$("submitBtn").style.display = "";return;}
     const data={timestamp:new Date().toLocaleString("ko-KR"),deceased:$("deceasedName").value,gender:$("gender").value,age:$("deceasedAge").value,religion:$("religion").value,origin:$("origin").value,funeralHall:$("funeralHall").value,hallRoom:$("hallRoom").value,burialSite:$("burialSite").value,mourners};
-    localStorage.setItem("funeral_"+data.deceased,JSON.stringify(data));
-    try{await fetch(SHEET,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});info("저장 완료");}catch(e){console.error(e);info("저장 실패",true);}
+    try{
+      await fetch(SHEET,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+      info("저장 완료");
+    }catch(e){
+      console.error(e);
+      info("인터넷 연결상태를 확인해주세요",true);
+    }
     render(data);show("summary");
     info("", false);
     $("submitBtn").style.display = "";
@@ -359,7 +402,40 @@
   }
 
   $("editBtn").onclick=()=>show("formPage");
+
+  // 삭제 모달 관련 함수
+  function showDeleteModal(targetBox, idx) {
+    const modal = document.getElementById('deleteModal');
+    const msg = document.getElementById('deleteModalMsg');
+    msg.textContent = `상주${idx}을 삭제하시겠습니까?`;
+    modal.classList.remove('hidden');
+    // 예 버튼
+    const yesBtn = document.getElementById('deleteModalYes');
+    // 아니오 버튼
+    const noBtn = document.getElementById('deleteModalNo');
+    // 기존 이벤트 제거
+    yesBtn.onclick = null;
+    noBtn.onclick = null;
+    yesBtn.onclick = () => {
+      targetBox.remove();
+      modal.classList.add('hidden');
+      reIndex();
+      updateMoveBtnState();
+    };
+    noBtn.onclick = () => {
+      modal.classList.add('hidden');
+    };
+  }
 })();
 </script>
+<div id="deleteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-80 max-w-full text-center">
+    <div id="deleteModalMsg" class="mb-5 text-base text-gray-800 font-semibold"></div>
+    <div class="flex justify-center gap-4">
+      <button id="deleteModalYes" class="px-4 py-1.5 rounded bg-red-500 text-white font-semibold hover:bg-red-600">예</button>
+      <button id="deleteModalNo" class="px-4 py-1.5 rounded bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300">아니오</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
